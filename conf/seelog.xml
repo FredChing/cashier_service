@@ -1,0 +1,10 @@
+<seelog type="sync">
+    <outputs formatid="main">
+        <console/>
+        <rollingfile type="size" filename="./log/log.log" maxsize="524288000" maxrolls="15"/>
+    </outputs>
+    <formats>
+        <!-- 设置格式 -->
+        <format id="main" format="%Date %Time [%Level] %RelFile %Line %Msg%n"/>
+    </formats>
+</seelog>

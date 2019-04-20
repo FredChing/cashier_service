@@ -1,6 +1,7 @@
 package service
 
 import (
+	"cashier_service/lib"
 	"crypto"
 	"crypto/rand"
 	"crypto/rsa"
@@ -288,4 +289,24 @@ func (alp2 *AlipayService) GetUrl() (info string, err error) {
 	alp2.PubParams["sign"] = sign
 
 	return ALIPAY_V2_GATEWAY + "?" + alp2.urlencode(alp2.PubParams), nil
+}
+
+func (alp2 *AlipayService) Sign(secret string, params map[string]string) string {
+	var keys = make([]string, 0, len(params))
+	for k := range params {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	var pList = make([]string, 0, 0)
+	for _, key := range keys {
+		value := strings.TrimSpace(params[key])
+		if key != "sign" && value != "" {
+			pList = append(pList, key+"="+value)
+		}
+	}
+	src := strings.Join(pList, "&") + secret
+	logs.Infof("alipay_service::Sign, sign befor, src:%s", src)
+	sign := lib.MD5(src)
+	return strings.ToUpper(sign)
 }

@@ -2,12 +2,12 @@ package controllers
 
 import (
 	"cashier_service/service"
-	"encoding/base64"
 	"errors"
 	"github.com/astaxie/beego"
 	logs "github.com/cihub/seelog"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type AlipayWap struct {
@@ -38,6 +38,7 @@ func (this *AlipayWap) Pay() {
 		"source_notify_url",
 	}
 
+	trade_id := string(time.Now().Format("20060102150405")) + strconv.Itoa(time.Now().Nanosecond())
 	for _, key := range p_key {
 		var f_key string
 		switch key {
@@ -46,7 +47,7 @@ func (this *AlipayWap) Pay() {
 		default:
 			f_key = key
 		}
-		p[key] = this.GetParams(f_key)
+		p[key] = this.GetParams(f_key, trade_id)
 	}
 
 	r_s := []string{p["return_url"], p["source_return_url"]}
@@ -72,7 +73,6 @@ func (this *AlipayWap) Pay() {
 
 	delete(p, "source_return_url")
 	delete(p, "source_notify_url")
-	p["out_trade_no"] = this.GetString("trade_id")
 
 	pay := &service.AlipayService{
 		Capture_account: strconv.Itoa(flag),
@@ -90,7 +90,7 @@ func (this *AlipayWap) Pay() {
 	this.OutputSuccess(http_url)
 }
 
-func (this *AlipayWap) GetParams(key string) (str string) {
+func (this *AlipayWap) GetParams(key string, trade_id string) (str string) {
 	if strings.HasSuffix(key, "_app_id") {
 		str = "pay::alipay_" + key
 		str = beego.AppConfig.String(str)
@@ -102,26 +102,27 @@ func (this *AlipayWap) GetParams(key string) (str string) {
 		str = "pay::alipay_" + key
 		str = beego.AppConfig.String(str)
 	case "subject", "body":
-		trade_id := this.GetString("trade_id")
-		str = "测试订单" + trade_id
+		str = trade_id
 	case "return_url":
-		str = "http://td.sandbox.wdwd.com/checkout/payback/alipay/return_url"
+		str = "http://test/checkout/payback/alipay/return_url"
 	case "notify_url":
-		str = "http://td.sandbox.wdwd.com/checkout/payback/alipay/notify_url"
+		str = "http://test/checkout/payback/alipay/notify_url"
 	case "timeout_express":
 		str = "5m"
 	case "total_amount":
 		str = strconv.FormatFloat(0.01, 'f', 2, 64)
 	case "out_trade_no":
-		str = this.GetString("trade_id")
+		str = trade_id
 	case "source_return_url":
-		str = base64.StdEncoding.EncodeToString([]byte(this.GetString("return_url")))
+		//str = base64.StdEncoding.EncodeToString([]byte(this.GetString("return_url")))
+		str = "test"
 	case "source_notify_url":
-		str = this.GetString("notify_url")
-		if str == "" {
-			str = this.GetString("return_url")
-		}
-		str = base64.StdEncoding.EncodeToString([]byte(str))
+		//str = this.GetString("notify_url")
+		//if str == "" {
+		//	str = this.GetString("return_url")
+		//}
+		//str = base64.StdEncoding.EncodeToString([]byte(str))
+		str = "test"
 	}
 
 	return

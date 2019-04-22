@@ -56,7 +56,9 @@ func (this *AlipayBack) handleNotify(vals url.Values) {
 	switch vals.Get("trade_status") {
 	case pay.ALIPAY_V2_TRADE_SUCC:
 		//TODO
-		logs.Info("AlipayBack::HandleNotify, notify success, 6666666666")
+		callback := this.GetString(":callback")
+		callback = pay.DecodeToUrl(callback)
+		logs.Infof("AlipayBack::HandleNotify, trade success, callbackUrl:%s", callback)
 	case pay.ALIPAY_V2_TRADE_WAIT_PAY, pay.ALIPAY_V2_TRADE_CLOSED:
 		this.view("success")
 	default:

@@ -38,6 +38,10 @@ const (
 	ALIPAY_V2_METHOD_PAGE    = "alipay.trade.page.pay"
 	ALIPAY_V2_METHOD_WAP  = "alipay.trade.wap.pay"
 	ALIPAY_V2_SIGN_TYPE_RSA2 = "RSA2"
+
+	ALIPAY_V2_TRADE_WAIT_PAY = "WAIT_BUYER_PAY"
+	ALIPAY_V2_TRADE_CLOSED   = "TRADE_CLOSED"
+	ALIPAY_V2_TRADE_SUCC     = "TRADE_SUCCESS"
 )
 
 var (

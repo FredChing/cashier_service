@@ -1,12 +1,13 @@
 package controllers
 
 import (
+	"cashier_service/models"
 	"cashier_service/service"
+	"encoding/base64"
 	"github.com/astaxie/beego"
 	logs "github.com/cihub/seelog"
 	"strconv"
 	"strings"
-	"time"
 )
 
 type AlipayWap struct {
@@ -20,7 +21,14 @@ func (this *AlipayWap) Pay() {
 	//if n == 5 {
 	//	flag = 0
 	//}
-	//trade_id := this.GetString("trade_id")
+	trade_id := this.GetString("trade_id")
+	paymentService := &service.WpPaymentsService{}
+	payment, err := paymentService.GetWpPaymentByTradeId(trade_id)
+	if err != nil {
+		this.Abort("订单号有误")
+		return
+	}
+	logs.Infof("alipay_wap_ctrl::pay, get payment by trade_id success, trade_id:%s, payment:%v", trade_id, payment)
 	//return_url := this.GetString("return_url")
 	//notify_url := this.GetString("notify_url")
 	p := make(map[string]string)
@@ -37,7 +45,6 @@ func (this *AlipayWap) Pay() {
 		"source_notify_url",
 	}
 
-	trade_id := string(time.Now().Format("20060102150405")) + strconv.Itoa(time.Now().Nanosecond())
 	for _, key := range p_key {
 		var f_key string
 		switch key {
@@ -46,7 +53,7 @@ func (this *AlipayWap) Pay() {
 		default:
 			f_key = key
 		}
-		p[key] = this.GetParams(f_key, trade_id)
+		p[key] = this.GetParams(f_key, payment)
 	}
 
 	r_s := []string{p["return_url"], p["source_return_url"]}
@@ -95,7 +102,7 @@ func (this *AlipayWap) Pay() {
 	//this.OutputSuccess(http_url)
 }
 
-func (this *AlipayWap) GetParams(key string, trade_id string) (str string) {
+func (this *AlipayWap) GetParams(key string, payment *models.WpPayments) (str string) {
 	if strings.HasSuffix(key, "_app_id") {
 		str = "pay::alipay_" + key
 		str = beego.AppConfig.String(str)
@@ -107,27 +114,29 @@ func (this *AlipayWap) GetParams(key string, trade_id string) (str string) {
 		str = "pay::alipay_" + key
 		str = beego.AppConfig.String(str)
 	case "subject", "body":
-		str = trade_id
+		str = payment.Subject
 	case "return_url":
-		str = "http://test/checkout/payback/alipay/return_url"
+		domain := beego.AppConfig.String("domain")
+		port := beego.AppConfig.String("httpport")
+		str = "http://"+domain+":"+port+"/checkout/payback/alipay/return_url"
 	case "notify_url":
-		str = "http://test/checkout/payback/alipay/notify_url"
+		domain := beego.AppConfig.String("domain")
+		port := beego.AppConfig.String("httpport")
+		str = "http://"+domain+":"+port+"/payback/alipay/notify_url"
 	case "timeout_express":
 		str = "5m"
 	case "total_amount":
-		str = strconv.FormatFloat(0.01, 'f', 2, 64)
+		str = strconv.FormatFloat(payment.Amount, 'f', 2, 64)
 	case "out_trade_no":
-		str = trade_id
+		str = payment.Out_trade_id
 	case "source_return_url":
-		//str = base64.StdEncoding.EncodeToString([]byte(this.GetString("return_url")))
-		str = "test"
+		str = base64.StdEncoding.EncodeToString([]byte(this.GetString("return_url")))
 	case "source_notify_url":
-		//str = this.GetString("notify_url")
-		//if str == "" {
-		//	str = this.GetString("return_url")
-		//}
-		//str = base64.StdEncoding.EncodeToString([]byte(str))
-		str = "test"
+		str = this.GetString("notify_url")
+		if str == "" {
+			str = this.GetString("return_url")
+		}
+		str = base64.StdEncoding.EncodeToString([]byte(str))
 	}
 
 	return

@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"cashier_service/lib"
 	"cashier_service/service"
 	"fmt"
 	"net/http"
@@ -35,6 +36,7 @@ func (this *cashierServiceApp) Init() error {
 		beego.StaticDir["/swagger"] = "swagger"
 	}
 
+	lib.MysqlInit()
 	alipay_init()
 
 	beego.BuildTemplate(beego.ViewsPath)

@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"cashier_service/service"
-	"git.wdwd.com/nova/cashier/pay"
+	"encoding/base64"
 	"net/url"
 	"strings"
 
@@ -19,11 +19,19 @@ func (this *AlipayBack) HandleReturn() {
 
 	uri := &url.Values{}
 	callback := this.GetString(":callback")
-	callback = pay.DecodeToUrl(callback)
+	callback = decodeToUrl(callback)
 
 	//uri.Set("trade_id", trade_id)
 	logs.Infof("AlipayBack::HandleReturn, out_trade_no:%s, return_url:%s", callback+"?"+uri.Encode())
 	this.Redirect(callback+"?"+uri.Encode(), 302)
+}
+
+func decodeToUrl(base64_str string) string {
+	data, err := base64.StdEncoding.DecodeString(base64_str)
+	if err != nil {
+		return ""
+	}
+	return string(data)
 }
 
 func (this *AlipayBack) HandleNotify() {

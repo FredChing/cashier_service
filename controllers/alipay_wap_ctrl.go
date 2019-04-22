@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"cashier_service/service"
-	"errors"
 	"github.com/astaxie/beego"
 	logs "github.com/cihub/seelog"
 	"strconv"
@@ -58,16 +57,21 @@ func (this *AlipayWap) Pay() {
 	total_fee, _ := strconv.ParseFloat(p["total_amount"], 64)
 	switch {
 	case p["app_id"] == "", p["subject"] == "":
-		this.OutputError(-1, errors.New("pay_illegal_params"))
+		this.Abort("pay_illegal_params")
+		//this.OutputError(-1, errors.New("pay_illegal_params"))
 		return
 	case p["source_return_url"] == "":
-		this.OutputError(-1, errors.New("pay_illegal_params"))
+		//this.OutputError(-1, errors.New("pay_illegal_params"))
+		this.Abort("pay_illegal_params")
 		return
 	case p["source_notify_url"] == "":
-		this.OutputError(-1, errors.New("pay_illegal_params"))
+		//this.OutputError(-1, errors.New("pay_illegal_params"))
+		this.Abort("pay_illegal_params")
 		return
 	case total_fee <= 0:
-		this.OutputError(-1, errors.New("订单金额必须大于0"))
+		//this.OutputError(-1, errors.New("订单金额必须大于0"))
+		this.Data["Content"] = "订单金额必须大于0"
+		this.TplNames = "error/error.html"
 		return
 	}
 
@@ -83,11 +87,12 @@ func (this *AlipayWap) Pay() {
 	http_url, err := pay.GetUrl()
 	logs.Infof("alipay::pay_new, pay:%v, http_url:%s",pay, http_url)
 	if err != nil {
-		this.OutputError(-1, err)
+		//this.OutputError(-1, err)
 		return
 	}
+	this.Redirect(http_url, 302)
 
-	this.OutputSuccess(http_url)
+	//this.OutputSuccess(http_url)
 }
 
 func (this *AlipayWap) GetParams(key string, trade_id string) (str string) {

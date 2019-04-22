@@ -5,7 +5,6 @@ import (
 	"crypto"
 	"crypto/rand"
 	"crypto/rsa"
-	"crypto/sha1"
 	"crypto/sha256"
 	"crypto/x509"
 	"encoding/base64"
@@ -355,27 +354,12 @@ func (alp2 *AlipayService) verify_sign(values url.Values) (verified bool, err er
 	}
 	str := strings.Join(pLst, "&")
 
-	if alp2.Sign_type == ALIPAY_V2_SIGN_TYPE_RSA2 {
-		err = rsa2Verify(str, alp2.get_public_key(), sign)
-	} else {
-		err = rsaVerify(str, alp2.get_public_key(), sign)
-	}
+	err = rsa2Verify(str, alp2.get_public_key(), sign)
 	if err != nil {
 		return
 	}
 	verified = true
 
-	return
-}
-
-func rsaVerify(str string, pub *rsa.PublicKey, signature string) (err error) {
-	h := sha1.New()
-	h.Write([]byte(str))
-
-	hashed := h.Sum(nil)
-	sign_byte := []byte(signature)
-
-	err = rsa.VerifyPKCS1v15(pub, crypto.SHA1, hashed[:], sign_byte)
 	return
 }
 

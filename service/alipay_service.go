@@ -124,6 +124,7 @@ func AlipayV2Init() (err error) {
 		alipayV2PrivateKey_M[capture_acc] = alipayV2PrivateKey
 		alipayV2PublicKey_M[capture_acc] = alipayV2PublicKey
 		logs.Infof("aaaaaaaaaaaa::AlipayV2Init, alipayV2PrivateKey:%v, alipayV2PrivateKey_M:%v", alipayV2PrivateKey, alipayV2PrivateKey_M)
+		logs.Infof("bbbbbbbbbbbb::AlipayV2Init, alipayV2PublicKey:%v, alipayV2PublicKey_M:%v", alipayV2PublicKey, alipayV2PublicKey_M)
 	}
 
 	return

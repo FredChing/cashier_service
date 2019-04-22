@@ -122,7 +122,7 @@ func (this *AlipayWap) GetParams(key string, payment *models.WpPayments) (str st
 	case "notify_url":
 		domain := beego.AppConfig.String("domain")
 		port := beego.AppConfig.String("httpport")
-		str = "http://"+domain+":"+port+"/payback/alipay/notify_url"
+		str = "http://"+domain+":"+port+"/checkout/payback/alipay/notify_url"
 	case "timeout_express":
 		str = "5m"
 	case "total_amount":

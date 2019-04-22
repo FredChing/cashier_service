@@ -5,6 +5,7 @@ import (
 	"crypto"
 	"crypto/rand"
 	"crypto/rsa"
+	"crypto/sha1"
 	"crypto/sha256"
 	"crypto/x509"
 	"encoding/base64"
@@ -309,4 +310,78 @@ func (alp2 *AlipayService) Sign(secret string, params map[string]string) string 
 	logs.Infof("alipay_service::Sign, sign befor, src:%s", src)
 	sign := lib.MD5(src)
 	return strings.ToUpper(sign)
+}
+
+func (alp2 *AlipayService) VerifySign(values url.Values) (verified bool, err error) {
+	return alp2.verify_sign(values)
+}
+
+func (alp2 *AlipayService) verify_sign(values url.Values) (verified bool, err error) {
+	byteSign, err := base64.StdEncoding.DecodeString(values.Get("sign"))
+	if err != nil {
+		return
+	}
+	sign := string(byteSign)
+
+	sign_type := values.Get("sign_type")
+	if sign == "" || sign_type == "" {
+		err = errors.New("no arg sign or sign_type")
+		return
+	}
+	alp2.Sign_type = sign_type
+
+	keys := make([]string, 0)
+	for key, value := range values {
+		if key == "sign" || key == "sign_type" {
+			continue
+		}
+
+		if len(value) > 0 {
+			keys = append(keys, key)
+		}
+	}
+	sort.Strings(keys)
+
+	pLst := make([]string, 0)
+	for _, key := range keys {
+		value := strings.TrimSpace(values.Get(key))
+		if value != "" {
+			pLst = append(pLst, key+"="+value)
+		}
+	}
+	str := strings.Join(pLst, "&")
+
+	if alp2.Sign_type == ALIPAY_V2_SIGN_TYPE_RSA2 {
+		err = rsa2Verify(str, alp2.get_public_key(), sign)
+	} else {
+		err = rsaVerify(str, alp2.get_public_key(), sign)
+	}
+	if err != nil {
+		return
+	}
+	verified = true
+
+	return
+}
+
+func rsaVerify(str string, pub *rsa.PublicKey, signature string) (err error) {
+	h := sha1.New()
+	h.Write([]byte(str))
+
+	hashed := h.Sum(nil)
+	sign_byte := []byte(signature)
+
+	err = rsa.VerifyPKCS1v15(pub, crypto.SHA1, hashed[:], sign_byte)
+	return
+}
+
+func rsa2Verify(str string, pub *rsa.PublicKey, signature string) (err error) {
+	h := sha256.New()
+	h.Write([]byte(str))
+
+	hashed := h.Sum(nil)
+	sign_byte := []byte(signature)
+
+	err = rsa.VerifyPKCS1v15(pub, crypto.SHA256, hashed[:], sign_byte)
+	return
 }

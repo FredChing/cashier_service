@@ -22,8 +22,6 @@ type WpPayments struct {
 	Out_trade_id   string
 	Payment_status int
 	Subject        string
-	Created_at     int64
-	Updated_at     int64
 }
 
 func (t *WpPayments) TableName() string {
@@ -31,7 +29,7 @@ func (t *WpPayments) TableName() string {
 }
 
 func (payments *WpPayments) LoadByOrderId(order_id string) (err error) {
-	select_str := fmt.Sprintf("SELECT `ID`,`mch_id`,`order_no`,`notifyurl`,`callbackurl`,`pay_memberid`,`amount`,`bankcode`,`orderid`,`out_trade_id`,`payment_status`,`subject`,`created_at`,`updated_at` FROM %s WHERE `orderid`='%s'", payments.TableName(), order_id)
+	select_str := fmt.Sprintf("SELECT `ID`,`mch_id`,`order_no`,`notifyurl`,`callbackurl`,`pay_memberid`,`amount`,`bankcode`,`orderid`,`out_trade_id`,`payment_status`,`subject` FROM %s WHERE `orderid`='%s'", payments.TableName(), order_id)
 
 	var (
 		id             int64
@@ -46,15 +44,13 @@ func (payments *WpPayments) LoadByOrderId(order_id string) (err error) {
 		out_trade_id   string
 		payment_status int
 		subject        string
-		created_at     int64
-		updated_at     int64
 	)
 
 	err = lib.Mysql.QueryRow(select_str).Scan(
 		&id, &mch_id, &order_no, &notifyurl,
 		&callbackurl, &pay_memberid, &amount, &bankcode,
 		&orderid, &out_trade_id, &payment_status,
-		&subject, &created_at, &updated_at)
+		&subject)
 	switch {
 	case err == sql.ErrNoRows:
 		err = errors.New("not exist wp_payments")
@@ -75,8 +71,6 @@ func (payments *WpPayments) LoadByOrderId(order_id string) (err error) {
 		payments.Out_trade_id = out_trade_id
 		payments.Payment_status = payment_status
 		payments.Subject = subject
-		payments.Created_at = created_at
-		payments.Updated_at = updated_at
 		return
 	}
 }

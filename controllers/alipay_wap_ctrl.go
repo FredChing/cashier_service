@@ -22,12 +22,13 @@ func (this *AlipayWap) Pay() {
 	//if n == 5 {
 	//	flag = 0
 	//}
+	mch_id := this.GetString("mch_id")
 	trade_id := this.GetString("trade_id")
 	return_url := this.GetString("return_url")
 	notify_url := this.GetString("notify_url")
 	sign := this.GetString("ac_sign")
 	logs.Infof("alipay_wap_ctrl::Pay, recv data, requestBody:%s, trade_id:%s, return_url:%s, notify_url:%s, sign:%s", string(this.Ctx.Input.RequestBody), trade_id, return_url, notify_url, sign)
-	if len(trade_id) <= 0 || len(return_url) <= 0 { //参数校验
+	if len(trade_id) <= 0 || len(return_url) <= 0 || len(mch_id) <= 0 { //参数校验
 		this.Abort("缺少参数")
 		return
 	}

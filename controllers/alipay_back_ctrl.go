@@ -22,7 +22,7 @@ func (this *AlipayBack) HandleReturn() {
 	callback = decodeToUrl(callback)
 
 	//uri.Set("trade_id", trade_id)
-	logs.Infof("AlipayBack::HandleReturn, out_trade_no:%s, return_url:%s", callback+"?"+uri.Encode())
+	logs.Infof("AlipayBack::HandleReturn, out_trade_no:%s, return_url:%s", out_trade_no, callback+"?"+uri.Encode())
 	this.Redirect(callback+"?"+uri.Encode(), 302)
 }
 

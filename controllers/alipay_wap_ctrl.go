@@ -15,6 +15,7 @@ type AlipayWap struct {
 }
 
 var flag = 1
+
 func (this *AlipayWap) Pay() {
 	//flag += 1
 	//n := flag
@@ -22,6 +23,27 @@ func (this *AlipayWap) Pay() {
 	//	flag = 0
 	//}
 	trade_id := this.GetString("trade_id")
+	return_url := this.GetString("return_url")
+	notify_url := this.GetString("notify_url")
+	sign := this.GetString("ac_sign")
+	logs.Infof("alipay_wap_ctrl::Pay, recv data, requestBody:%s, trade_id:%s, return_url:%s, notify_url:%s, sign:%s", string(this.Ctx.Input.RequestBody), trade_id, return_url, notify_url, sign)
+	if len(trade_id) <= 0 || len(return_url) <= 0 { //参数校验
+		this.Abort("缺少参数")
+		return
+	}
+	sign_key := beego.AppConfig.String("alipay_" + strconv.Itoa(flag) + "_sign_key") //签名key
+	params := map[string]string{
+		"trade_id":   trade_id,
+		"return_url": return_url,
+		"notify_url": notify_url,
+	}
+	alipayService := &service.AlipayService{}
+	sign_str := alipayService.Sign(sign_key, params)
+	if sign != sign_str {
+		this.Abort("签名错误")
+		return
+	}
+	//签名校验
 	paymentService := &service.WpPaymentsService{}
 	payment, err := paymentService.GetWpPaymentByTradeId(trade_id)
 	if err != nil {
@@ -92,7 +114,7 @@ func (this *AlipayWap) Pay() {
 	}
 	_ = pay.PayInit(p)
 	http_url, err := pay.GetUrl()
-	logs.Infof("alipay::pay_new, pay:%v, http_url:%s",pay, http_url)
+	logs.Infof("alipay::pay_new, pay:%v, http_url:%s", pay, http_url)
 	if err != nil {
 		//this.OutputError(-1, err)
 		return
@@ -118,11 +140,11 @@ func (this *AlipayWap) GetParams(key string, payment *models.WpPayments) (str st
 	case "return_url":
 		domain := beego.AppConfig.String("domain")
 		port := beego.AppConfig.String("httpport")
-		str = "http://"+domain+":"+port+"/checkout/payback/alipay/return_url"
+		str = "http://" + domain + ":" + port + "/checkout/payback/alipay/return_url"
 	case "notify_url":
 		domain := beego.AppConfig.String("domain")
 		port := beego.AppConfig.String("httpport")
-		str = "http://"+domain+":"+port+"/checkout/payback/alipay/notify_url"
+		str = "http://" + domain + ":" + port + "/checkout/payback/alipay/notify_url"
 	case "timeout_express":
 		str = "5m"
 	case "total_amount":

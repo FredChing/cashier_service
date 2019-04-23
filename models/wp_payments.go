@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"time"
 
 	logs "github.com/cihub/seelog"
 )
@@ -22,6 +23,8 @@ type WpPayments struct {
 	Out_trade_id   string
 	Payment_status int
 	Subject        string
+	Created_at     int64
+	Updated_at     int64
 }
 
 func (t *WpPayments) TableName() string {
@@ -73,4 +76,42 @@ func (payments *WpPayments) LoadByOrderId(order_id string) (err error) {
 		payments.Subject = subject
 		return
 	}
+}
+
+//Insert 添加数据
+func (this *WpPayments) Insert() error {
+	if this.Created_at == 0 {
+		this.Created_at = time.Now().Unix()
+		this.Updated_at = this.Updated_at
+	}
+	tx, err := lib.NewTx()
+	if err != nil {
+		return err
+	}
+	_, err = tx.Insert(this)
+	if err != nil {
+		tx.Rollback()
+		_ = logs.Warnf("WpPayments::Insert, insert failed, error:%s", err.Error())
+		return err
+	}
+	tx.Commit()
+	return nil
+}
+
+//UpdateCallInterface 更新调用提现接口为已发送状态
+func (this *WpPayments) UpdatePaymentStatusSuccess(orderid string) error {
+	sql_str := fmt.Sprintf("UPDATE %s SET `payment_status`=1, `updated_at`=%d WHERE orderid='%s'",
+		this.TableName(), time.Now().Unix(), orderid)
+	tx, err := lib.NewTx()
+	if err != nil {
+		return err
+	}
+	_, err = tx.Exec(sql_str)
+	if err != nil {
+		tx.Rollback()
+		_ = logs.Warnf("WpPayments::UpdatePaymentStatusSuccess, update failed , sql:%s, error:%s", sql_str, err.Error())
+		return err
+	}
+	_ = tx.Commit()
+	return nil
 }

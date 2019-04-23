@@ -12,6 +12,7 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
+	"github.com/astaxie/beego/httplib"
 	logs "github.com/cihub/seelog"
 	"io/ioutil"
 	"net/url"
@@ -310,10 +311,12 @@ func (alp2 *AlipayService) Sign(secret string, params map[string]string) string 
 			pList = append(pList, key+"="+value)
 		}
 	}
-	src := strings.Join(pList, "&") + secret
+	src := strings.Join(pList, "&") + "&" + secret
 	logs.Infof("alipay_service::Sign, sign befor, src:%s", src)
 	sign := lib.MD5(src)
-	return strings.ToUpper(sign)
+	sign = strings.ToUpper(sign)
+	logs.Infof("alipay_service::Sign, sign befor, src:%s，after sign:%s", src, sign)
+	return sign
 }
 
 func (alp2 *AlipayService) VerifySign(values url.Values) (verified bool, err error) {
@@ -373,4 +376,32 @@ func rsa2Verify(str string, pub *rsa.PublicKey, signature string) (err error) {
 
 	err = rsa.VerifyPKCS1v15(pub, crypto.SHA256, hashed[:], sign_byte)
 	return
+}
+
+func (this *AlipayService) RequestNotifyUrl(url string, params *map[string]string) error {
+	req := httplib.Post(url)
+	//设置超时时间：链接3s超时，读写60s超时
+	connectTimeout := time.Duration(3 * time.Second)
+	readWriteTimeout := time.Duration(60 * time.Second)
+	req.SetTimeout(connectTimeout, readWriteTimeout)
+	var s []string
+	for k, v := range *params {
+		req.Param(k, v)
+		s = append(s, k+":"+v+", ")
+	}
+	paramStr := strings.Join(s, "")
+	paramStr = paramStr[:len(paramStr)-2]
+	byteData, err := req.Bytes()
+	if err != nil {
+		_ = logs.Warnf("AlipayService::RequestNotifyUrl error, url:%s, params:%s, response:%s", url, paramStr, string(byteData))
+		return err
+	}
+	//result := &WeiXuanResult{}
+	//err = json.Unmarshal(byteData, &result)
+	//if err != nil {
+	//	logs.Warnf("WeixuanService::RequestWeiXuanApi, result data json unmarshal fail:api_url:%s, params:%s, error:%s", api_url, paramStr, err.Error())
+	//	return nil, err
+	//}
+	logs.Infof("AlipayService::RequestNotifyUrl success, url:%s, params:%s, response:%+v", url, paramStr, string(byteData))
+	return err
 }

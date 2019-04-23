@@ -8,6 +8,7 @@ import (
 	logs "github.com/cihub/seelog"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type AlipayWap struct {
@@ -26,34 +27,44 @@ func (this *AlipayWap) Pay() {
 	trade_id := this.GetString("trade_id")
 	return_url := this.GetString("return_url")
 	notify_url := this.GetString("notify_url")
+	amount := this.GetString("amount")
+	product_name := this.GetString("product_name")
 	sign := this.GetString("ac_sign")
-	logs.Infof("alipay_wap_ctrl::Pay, recv data, requestBody:%s, trade_id:%s, return_url:%s, notify_url:%s, sign:%s", string(this.Ctx.Input.RequestBody), trade_id, return_url, notify_url, sign)
-	if len(trade_id) <= 0 || len(return_url) <= 0 || len(mch_id) <= 0 { //参数校验
+	logs.Infof("alipay_wap_ctrl::Pay, recv data, requestBody:%s, mch_id:%s, trade_id:%s, return_url:%s, notify_url:%s, "+
+		"amount:%s, product_name:%s, csign:%s", string(this.Ctx.Input.RequestBody), mch_id, trade_id, return_url, notify_url, amount, product_name, sign)
+	if len(trade_id) <= 0 || len(return_url) <= 0 || len(mch_id) <= 0 || len(amount) <= 0 || len(product_name) <= 0 { //参数校验
 		this.Abort("缺少参数")
 		return
 	}
-	sign_key := beego.AppConfig.String("alipay_" + strconv.Itoa(flag) + "_sign_key") //签名key
+
+	sign_key := beego.AppConfig.String("pay::alipay_" + strconv.Itoa(flag) + "_key") //签名key
+	logs.Infof("alipay_service::Pay, sign_key:%s, key:%s", sign_key, "pay::alipay_"+strconv.Itoa(flag)+"_key")
 	params := map[string]string{
-		"trade_id":   trade_id,
-		"return_url": return_url,
-		"notify_url": notify_url,
+		"mch_id":       mch_id,
+		"trade_id":     trade_id,
+		"amount":       amount,
+		"product_name": product_name,
+		"return_url":   return_url,
+		"notify_url":   notify_url,
 	}
+	//签名校验
 	alipayService := &service.AlipayService{}
 	sign_str := alipayService.Sign(sign_key, params)
 	if sign != sign_str {
 		this.Abort("签名错误")
 		return
 	}
-	//签名校验
+
+	//add
 	paymentService := &service.WpPaymentsService{}
-	payment, err := paymentService.GetWpPaymentByTradeId(trade_id)
+	order_no := string(time.Now().Format("20060102150405")) + strconv.Itoa(time.Now().Nanosecond())
+	amount_f, _ := strconv.ParseFloat(amount, 64)
+	payment, err := paymentService.AddPayment(mch_id, order_no, trade_id, "", product_name, amount_f, notify_url, return_url)
 	if err != nil {
-		this.Abort("订单号有误")
+		this.Abort("出错啦")
 		return
 	}
-	logs.Infof("alipay_wap_ctrl::pay, get payment by trade_id success, trade_id:%s, payment:%v", trade_id, payment)
-	//return_url := this.GetString("return_url")
-	//notify_url := this.GetString("notify_url")
+	logs.Infof("alipay_wap_ctrl::pay, AddPayment success, trade_id:%s", trade_id)
 	p := make(map[string]string)
 	p_key := []string{
 		"app_id",

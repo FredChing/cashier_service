@@ -3,7 +3,9 @@ package controllers
 import (
 	"cashier_service/service"
 	"encoding/base64"
+	"github.com/astaxie/beego"
 	"net/url"
+	"strconv"
 	"strings"
 
 	logs "github.com/cihub/seelog"
@@ -63,10 +65,25 @@ func (this *AlipayBack) handleNotify(vals url.Values) {
 
 	switch vals.Get("trade_status") {
 	case service.ALIPAY_V2_TRADE_SUCC:
-		//TODO
 		callback := this.GetString(":callback")
 		callback = decodeToUrl(callback)
-		logs.Infof("AlipayBack::HandleNotify, trade success, callbackUrl:%s", callback)
+		logs.Infof("AlipayBack::HandleNotify, trade success, callbackUrl:%s, vals:%v", callback, vals)
+		params := map[string]string{
+			"bizOrderNo": vals.Get("out_trade_no"),
+			"orderNo":    vals.Get("trade_no"),
+			"amount":     vals.Get("receipt_amount"),
+			"payTime":    vals.Get("gmt_payment"),
+			"status":     "0",
+		}
+		sign_key := beego.AppConfig.String("pay::alipay_" + strconv.Itoa(flag) + "_key") //签名key
+		alipayService := &service.AlipayService{}
+		sign_str := alipayService.Sign(sign_key, params)
+		params["sign"] = sign_str
+		err := alipayService.RequestNotifyUrl(callback, &params)
+		if err != nil {
+			_ = logs.Warnf("AlipayBack::HandleNotify, RequestNotifyUrl failed, callbackUrl:%s, params:%v, vals:%v", callback, params, vals)
+		}
+		this.Ctx.WriteString("success")
 		this.view("success")
 	case service.ALIPAY_V2_TRADE_WAIT_PAY, service.ALIPAY_V2_TRADE_CLOSED:
 		this.view("success")

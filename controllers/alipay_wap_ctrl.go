@@ -132,8 +132,7 @@ func (this *AlipayWap) Pay() {
 		return
 	}
 	this.Redirect(http_url, 302)
-
-	//this.OutputSuccess(http_url)
+	this.OutputSuccess(http_url)
 }
 
 func (this *AlipayWap) GetParams(key string, payment *models.WpPayments) (str string) {

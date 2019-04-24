@@ -99,9 +99,9 @@ func (this *WpPayments) Insert() error {
 }
 
 //UpdateCallInterface 更新调用提现接口为已发送状态
-func (this *WpPayments) UpdatePaymentStatusSuccess(orderid string) error {
-	sql_str := fmt.Sprintf("UPDATE %s SET `payment_status`=1, `updated_at`=%d WHERE orderid='%s'",
-		this.TableName(), time.Now().Unix(), orderid)
+func (this *WpPayments) UpdatePaymentStatusSuccess(order_no string) error {
+	sql_str := fmt.Sprintf("UPDATE %s SET `payment_status`=1, `updated_at`=%d WHERE order_no='%s'",
+		this.TableName(), time.Now().Unix(), order_no)
 	tx, err := lib.NewTx()
 	if err != nil {
 		return err

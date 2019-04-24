@@ -312,7 +312,6 @@ func (alp2 *AlipayService) Sign(secret string, params map[string]string) string 
 		}
 	}
 	src := strings.Join(pList, "&") + "&" + secret
-	logs.Infof("alipay_service::Sign, sign befor, src:%s", src)
 	sign := lib.MD5(src)
 	sign = strings.ToUpper(sign)
 	logs.Infof("alipay_service::Sign, sign befor, src:%s，after sign:%s", src, sign)

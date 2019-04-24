@@ -5,7 +5,6 @@ import (
 	"encoding/base64"
 	"github.com/astaxie/beego"
 	"net/url"
-	"strconv"
 	"strings"
 
 	logs "github.com/cihub/seelog"
@@ -65,9 +64,17 @@ func (this *AlipayBack) handleNotify(vals url.Values) {
 
 	switch vals.Get("trade_status") {
 	case service.ALIPAY_V2_TRADE_SUCC:
+		payService := &service.WpPaymentsService{}
+		err := payService.UpdatePaymentStatusSuccess(vals.Get("out_trade_no"))
+		if err != nil {
+			_ = logs.Warnf("AlipayBack::HandleNotify, UpdatePaymentStatusSuccess failed, vals:%v, error:%s", vals, err.Error())
+		}
+		logs.Infof("AlipayBack::HandleNotify, UpdatePaymentStatusSuccess success, vals:%v", vals)
+
 		callback := this.GetString(":callback")
 		callback = decodeToUrl(callback)
-		logs.Infof("AlipayBack::HandleNotify, trade success, callbackUrl:%s, vals:%v", callback, vals)
+		mch_id := this.GetString(":merchant")
+		logs.Infof("AlipayBack::HandleNotify, trade success, mch_id:%s, callbackUrl:%s, vals:%v", mch_id, callback, vals)
 		params := map[string]string{
 			"bizOrderNo": vals.Get("out_trade_no"),
 			"orderNo":    vals.Get("trade_no"),
@@ -75,11 +82,11 @@ func (this *AlipayBack) handleNotify(vals url.Values) {
 			"payTime":    vals.Get("gmt_payment"),
 			"status":     "0",
 		}
-		sign_key := beego.AppConfig.String("pay::alipay_" + strconv.Itoa(flag) + "_key") //签名key
+		sign_key := beego.AppConfig.String("merchant::" + mch_id) //签名key
 		alipayService := &service.AlipayService{}
 		sign_str := alipayService.Sign(sign_key, params)
 		params["sign"] = sign_str
-		err := alipayService.RequestNotifyUrl(callback, &params)
+		err = alipayService.RequestNotifyUrl(callback, &params)
 		if err != nil {
 			_ = logs.Warnf("AlipayBack::HandleNotify, RequestNotifyUrl failed, callbackUrl:%s, params:%v, vals:%v, error:%s", callback, params, vals, err.Error())
 		}

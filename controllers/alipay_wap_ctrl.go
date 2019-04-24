@@ -37,8 +37,8 @@ func (this *AlipayWap) Pay() {
 		return
 	}
 
-	sign_key := beego.AppConfig.String("pay::alipay_" + strconv.Itoa(flag) + "_key") //签名key
-	logs.Infof("alipay_service::Pay, sign_key:%s, key:%s", sign_key, "pay::alipay_"+strconv.Itoa(flag)+"_key")
+	sign_key := beego.AppConfig.String("merchant::" + mch_id) //签名key
+	logs.Infof("alipay_service::Pay, sign_key:%s, mch_id:%s", sign_key, mch_id)
 	params := map[string]string{
 		"mch_id":       mch_id,
 		"trade_id":     trade_id,
@@ -151,11 +151,11 @@ func (this *AlipayWap) GetParams(key string, payment *models.WpPayments) (str st
 	case "return_url":
 		domain := beego.AppConfig.String("domain")
 		port := beego.AppConfig.String("httpport")
-		str = "http://" + domain + ":" + port + "/checkout/payback/alipay/return_url"
+		str = "http://" + domain + ":" + port + "/checkout/payback/alipay/return_url/" + payment.Mch_id
 	case "notify_url":
 		domain := beego.AppConfig.String("domain")
 		port := beego.AppConfig.String("httpport")
-		str = "http://" + domain + ":" + port + "/checkout/payback/alipay/notify_url"
+		str = "http://" + domain + ":" + port + "/checkout/payback/alipay/notify_url/" + payment.Mch_id
 	case "timeout_express":
 		str = "5m"
 	case "total_amount":

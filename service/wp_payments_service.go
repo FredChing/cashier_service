@@ -41,12 +41,12 @@ func (this *WpPaymentsService) AddPayment(mch_id string, order_no string,orderid
 	return payment, nil
 }
 
-func (this *WpPaymentsService) UpdatePaymentStatusSuccess(orderid string) (*models.WpPayments, error) {
+func (this *WpPaymentsService) UpdatePaymentStatusSuccess(order_no string) error {
 	payment := &models.WpPayments{}
-	err := payment.UpdatePaymentStatusSuccess(orderid)
+	err := payment.UpdatePaymentStatusSuccess(order_no)
 	if err != nil {
-		_ = logs.Warnf("WpPaymentsService::UpdatePaymentStatusSuccess, payment update error, orderid:%s, error:%s", orderid, err.Error())
-		return nil, err
+		_ = logs.Warnf("WpPaymentsService::UpdatePaymentStatusSuccess, payment update error, orderid:%s, error:%s", order_no, err.Error())
+		return err
 	}
-	return payment, nil
+	return nil
 }

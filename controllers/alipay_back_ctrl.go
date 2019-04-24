@@ -19,13 +19,13 @@ func (this *AlipayBack) HandleReturn() {
 	out_trade_no := this.GetString("out_trade_no")
 	logs.Infof("AlipayBack::HandleReturn, out_trade_no:%s", out_trade_no)
 
-	uri := &url.Values{}
+	//uri := &url.Values{}
 	callback := this.GetString(":callback")
 	callback = decodeToUrl(callback)
 
 	//uri.Set("trade_id", trade_id)
-	logs.Infof("AlipayBack::HandleReturn, out_trade_no:%s, return_url:%s", out_trade_no, callback+"?"+uri.Encode())
-	this.Redirect(callback+"?"+uri.Encode(), 302)
+	logs.Infof("AlipayBack::HandleReturn, out_trade_no:%s, return_url:%s", out_trade_no, callback)
+	this.Redirect(callback, 302)
 }
 
 func decodeToUrl(base64_str string) string {
@@ -81,9 +81,10 @@ func (this *AlipayBack) handleNotify(vals url.Values) {
 		params["sign"] = sign_str
 		err := alipayService.RequestNotifyUrl(callback, &params)
 		if err != nil {
-			_ = logs.Warnf("AlipayBack::HandleNotify, RequestNotifyUrl failed, callbackUrl:%s, params:%v, vals:%v", callback, params, vals)
+			_ = logs.Warnf("AlipayBack::HandleNotify, RequestNotifyUrl failed, callbackUrl:%s, params:%v, vals:%v, error:%s", callback, params, vals, err.Error())
+		} else {
+			this.Ctx.WriteString("success")
 		}
-		this.Ctx.WriteString("success")
 		this.view("success")
 	case service.ALIPAY_V2_TRADE_WAIT_PAY, service.ALIPAY_V2_TRADE_CLOSED:
 		this.view("success")

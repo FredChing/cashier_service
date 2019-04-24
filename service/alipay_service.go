@@ -393,7 +393,7 @@ func (this *AlipayService) RequestNotifyUrl(url string, params *map[string]strin
 	paramStr = paramStr[:len(paramStr)-2]
 	byteData, err := req.Bytes()
 	if err != nil {
-		_ = logs.Warnf("AlipayService::RequestNotifyUrl error, url:%s, params:%s, response:%s", url, paramStr, string(byteData))
+		_ = logs.Warnf("AlipayService::RequestNotifyUrl error, url:%s, params:%s, response:%s, error:%s", url, paramStr, string(byteData), err.Error())
 		return err
 	}
 	//result := &WeiXuanResult{}

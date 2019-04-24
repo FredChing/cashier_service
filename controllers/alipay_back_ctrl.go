@@ -82,8 +82,6 @@ func (this *AlipayBack) handleNotify(vals url.Values) {
 		err := alipayService.RequestNotifyUrl(callback, &params)
 		if err != nil {
 			_ = logs.Warnf("AlipayBack::HandleNotify, RequestNotifyUrl failed, callbackUrl:%s, params:%v, vals:%v, error:%s", callback, params, vals, err.Error())
-		} else {
-			this.Ctx.WriteString("success")
 		}
 		this.view("success")
 	case service.ALIPAY_V2_TRADE_WAIT_PAY, service.ALIPAY_V2_TRADE_CLOSED:

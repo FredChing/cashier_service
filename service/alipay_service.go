@@ -36,7 +36,7 @@ const (
 	ALIPAY_V2_VERSION = "1.0"
 
 	ALIPAY_V2_METHOD_PAGE    = "alipay.trade.page.pay"
-	ALIPAY_V2_METHOD_WAP  = "alipay.trade.wap.pay"
+	ALIPAY_V2_METHOD_WAP     = "alipay.trade.wap.pay"
 	ALIPAY_V2_SIGN_TYPE_RSA2 = "RSA2"
 
 	ALIPAY_V2_TRADE_WAIT_PAY = "WAIT_BUYER_PAY"
@@ -78,8 +78,8 @@ var (
 	}
 
 	alipayV2BizParam_MM = map[string](map[string]bool){
-		ALIPAY_V2_METHOD_WAP:              alipayV2BizParam_pay_M,
-		ALIPAY_V2_METHOD_PAGE:             alipayV2BizParam_pay_M,
+		ALIPAY_V2_METHOD_WAP:  alipayV2BizParam_pay_M,
+		ALIPAY_V2_METHOD_PAGE: alipayV2BizParam_pay_M,
 	}
 
 	AlipayV2RsaPath      string

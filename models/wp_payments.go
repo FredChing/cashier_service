@@ -82,7 +82,7 @@ func (payments *WpPayments) LoadByOrderId(order_id string) (err error) {
 func (this *WpPayments) Insert() error {
 	if this.Created_at == 0 {
 		this.Created_at = time.Now().Unix()
-		this.Updated_at = this.Updated_at
+		this.Updated_at = this.Created_at
 	}
 	tx, err := lib.NewTx()
 	if err != nil {

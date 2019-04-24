@@ -59,7 +59,7 @@ func (this *AlipayWap) Pay() {
 	paymentService := &service.WpPaymentsService{}
 	order_no := string(time.Now().Format("20060102150405")) + strconv.Itoa(time.Now().Nanosecond())
 	amount_f, _ := strconv.ParseFloat(amount, 64)
-	payment, err := paymentService.AddPayment(mch_id, order_no, trade_id, "", product_name, amount_f, notify_url, return_url)
+	payment, err := paymentService.AddPayment(mch_id, order_no, trade_id, order_no, product_name, amount_f, notify_url, return_url)
 	if err != nil {
 		this.Abort("出错啦")
 		return

@@ -94,7 +94,6 @@ func (this *WpPayments) Insert(tx *lib.CTx) error {
 		_ = logs.Warnf("WpPayments::Insert, insert failed, error:%s", err.Error())
 		return err
 	}
-	tx.Commit()
 	return nil
 }
 

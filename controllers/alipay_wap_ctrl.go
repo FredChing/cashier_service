@@ -67,7 +67,7 @@ func (this *AlipayWap) Pay() {
 	}
 	tx, err := lib.NewTx()
 	if err != nil {
-		this.Abort("系统异常E002")
+		this.Abort("系统异常E001")
 		return
 	}
 	payment, err = paymentService.AddPayment(tx, mch_id, order_no, trade_id, trade_id, product_name, amount_f, notify_url, return_url)
@@ -84,7 +84,7 @@ func (this *AlipayWap) Pay() {
 	}
 	txOrder, err := lib.NewTx91dpays()
 	if err != nil {
-		this.Abort("系统异常E001")
+		this.Abort("系统异常E002")
 		return
 	}
 	payorder, err = orderService.AddPayOrder(txOrder, mch_id, order_no, amount_f, amount_f, product_name, trade_id, notify_url, return_url)

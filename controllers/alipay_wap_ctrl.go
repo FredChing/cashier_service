@@ -5,6 +5,7 @@ import (
 	"cashier_service/models"
 	"cashier_service/service"
 	"encoding/base64"
+	"fmt"
 	"github.com/astaxie/beego"
 	logs "github.com/cihub/seelog"
 	"strconv"
@@ -93,8 +94,16 @@ func (this *AlipayWap) Pay() {
 		this.Abort("创建订单失败!!!")
 		return
 	}
-	_ = tx.Commit()
-	_ = txOrder.Commit()
+	err = tx.Commit()
+	if err != nil {
+		this.Abort(fmt.Sprintf("tx.commit error:%s", err.Error()))
+		return
+	}
+	err = txOrder.Commit()
+	if err != nil {
+		this.Abort(fmt.Sprintf("txOrder.commit error:%s", err.Error()))
+		return
+	}
 
 	logs.Infof("alipay_wap_ctrl::pay, AddPayment success, trade_id:%s", trade_id)
 	p := make(map[string]string)

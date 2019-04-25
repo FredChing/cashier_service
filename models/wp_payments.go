@@ -84,11 +84,7 @@ func (this *WpPayments) Insert(tx *lib.CTx) error {
 		this.Created_at = time.Now().Unix()
 		this.Updated_at = this.Created_at
 	}
-	tx, err := lib.NewTx()
-	if err != nil {
-		return err
-	}
-	_, err = tx.Insert(this)
+	_, err := tx.Insert(this)
 	if err != nil {
 		tx.Rollback()
 		_ = logs.Warnf("WpPayments::Insert, insert failed, error:%s", err.Error())

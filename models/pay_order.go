@@ -105,7 +105,7 @@ func (this *PayOrder) Insert(tx *lib.CTx91dpays) error {
 	_, err := tx.Exec(sql_str)
 	if err != nil {
 		tx.Rollback()
-		_ = logs.Warnf("PayOrder::Insert, insert failed, error:%s", err.Error())
+		_ = logs.Warnf("PayOrder::Insert, insert failed, sql:%s, error:%s", sql_str, err.Error())
 		return err
 	}
 	return nil

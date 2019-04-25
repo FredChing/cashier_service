@@ -34,6 +34,15 @@ func (this *PayOrderService) AddPayOrder(pay_memberid string, pay_orderid string
 	order.Out_trade_id = out_trade_id
 	order.Pay_ytongdao = "alipay-wap"
 	order.Pay_yzh_tongdao = "支付宝-手机网站支付"
+	order.Key = ""
+	order.Account = ""
+	order.Isdel = 0
+	order.Ddlx = 0
+	order.Pay_ytongdao = "alipay-wap"
+	order.Pay_yzh_tongdao = "支付宝-手机网站支付"
+	order.Xx = 0
+	order.Attach = ""
+	order.Pay_channel_account = ""
 	err := order.Insert()
 	if err != nil {
 		_ = logs.Warnf("PayOrderService::AddPayOrder, pay_order Insert error, pay_order:%v, error:%s", order, err.Error())

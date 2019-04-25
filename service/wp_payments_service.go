@@ -9,11 +9,11 @@ type WpPaymentsService struct {
 }
 
 //CheckTradeByTradeId 根据订单号获取订单信息
-func (this *WpPaymentsService) GetWpPaymentByTradeId(trade_id string) (*models.WpPayments, error) {
+func (this *WpPaymentsService) GetWpPaymentByTradeId(outTradeId string) (*models.WpPayments, error) {
 	payment := &models.WpPayments{}
-	err := payment.LoadByOrderId(trade_id)
+	err := payment.LoadByOrderId(outTradeId)
 	if err != nil {
-		_ = logs.Warnf("WpPaymentsService::GetWpPaymentByTradeID, payment LoadByOrderId error, trade_id:%s, error:%s", trade_id, err.Error())
+		_ = logs.Warnf("WpPaymentsService::GetWpPaymentByTradeID, payment LoadByOrderId error, outTradeId:%s, error:%s", outTradeId, err.Error())
 		return nil, err
 	}
 	return payment, nil
@@ -41,11 +41,11 @@ func (this *WpPaymentsService) AddPayment(mch_id string, order_no string,orderid
 	return payment, nil
 }
 
-func (this *WpPaymentsService) UpdatePaymentStatusSuccess(order_no string) error {
+func (this *WpPaymentsService) UpdatePaymentStatusSuccess(out_trade_id string) error {
 	payment := &models.WpPayments{}
-	err := payment.UpdatePaymentStatusSuccess(order_no)
+	err := payment.UpdatePaymentStatusSuccess(out_trade_id)
 	if err != nil {
-		_ = logs.Warnf("WpPaymentsService::UpdatePaymentStatusSuccess, payment update error, orderid:%s, error:%s", order_no, err.Error())
+		_ = logs.Warnf("WpPaymentsService::UpdatePaymentStatusSuccess, payment update error, out_trade_id:%s, error:%s", out_trade_id, err.Error())
 		return err
 	}
 	return nil

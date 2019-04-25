@@ -71,6 +71,13 @@ func (this *AlipayBack) handleNotify(vals url.Values) {
 		}
 		logs.Infof("AlipayBack::HandleNotify, UpdatePaymentStatusSuccess success, vals:%v", vals)
 
+		orderService := &service.PayOrderService{}
+		err = orderService.UpdateOrderPayStatusSuccess(vals.Get("out_trade_no"))
+		if err != nil {
+			_ = logs.Warnf("AlipayBack::HandleNotify, UpdateOrderPayStatusSuccess failed, vals:%v, error:%s", vals, err.Error())
+		}
+		logs.Infof("AlipayBack::HandleNotify, UpdateOrderPayStatusSuccess success, vals:%v", vals)
+
 		callback := this.GetString(":callback")
 		callback = decodeToUrl(callback)
 		mch_id := this.GetString(":merchant")

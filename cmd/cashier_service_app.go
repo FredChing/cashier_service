@@ -37,6 +37,7 @@ func (this *cashierServiceApp) Init() error {
 	}
 
 	lib.MysqlInit()
+	lib.Mysql91dpaysInit()
 	alipay_init()
 
 	beego.BuildTemplate(beego.ViewsPath)

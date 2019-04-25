@@ -59,11 +59,29 @@ func (this *AlipayWap) Pay() {
 	paymentService := &service.WpPaymentsService{}
 	order_no := string(time.Now().Format("20060102150405")) + strconv.Itoa(time.Now().Nanosecond())
 	amount_f, _ := strconv.ParseFloat(amount, 64)
-	payment, err := paymentService.AddPayment(mch_id, order_no, trade_id, order_no, product_name, amount_f, notify_url, return_url)
-	if err != nil {
-		this.Abort("出错啦")
+	payment,err := paymentService.GetWpPaymentByTradeId(trade_id)
+	if err == nil && payment.Orderid != "" {
+		this.Abort("请勿重复提交订单")
 		return
 	}
+	payment, err = paymentService.AddPayment(mch_id, order_no, trade_id, trade_id, product_name, amount_f, notify_url, return_url)
+	if err != nil {
+		this.Abort("创建订单失败")
+		return
+	}
+
+	orderService := &service.PayOrderService{}
+	payorder,err := orderService.GetPayOrderByTradeId(trade_id)
+	if err == nil && payorder.Out_trade_id != "" {
+		this.Abort("请勿重复提交订单!!!")
+		return
+	}
+	payorder, err = orderService.AddPayOrder(mch_id, order_no, amount_f, amount_f, product_name, trade_id, notify_url, return_url)
+	if err != nil {
+		this.Abort("创建订单失败!!!")
+		return
+	}
+
 	logs.Infof("alipay_wap_ctrl::pay, AddPayment success, trade_id:%s", trade_id)
 	p := make(map[string]string)
 	p_key := []string{
@@ -130,6 +148,10 @@ func (this *AlipayWap) Pay() {
 	if err != nil {
 		//this.OutputError(-1, err)
 		return
+	}
+	err = orderService.UpdateOrderPayStatusPending(order_no)
+	if err == nil {
+		logs.Infof("AlipayWap::Pay, UpdateOrderPayStatusPending success, order_no:%s", order_no)
 	}
 	this.Redirect(http_url, 302)
 	//this.OutputSuccess(http_url)

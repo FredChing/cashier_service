@@ -31,8 +31,8 @@ func (t *WpPayments) TableName() string {
 	return "wp_payments"
 }
 
-func (payments *WpPayments) LoadByOrderId(order_id string) (err error) {
-	select_str := fmt.Sprintf("SELECT `ID`,`mch_id`,`order_no`,`notifyurl`,`callbackurl`,`pay_memberid`,`amount`,`bankcode`,`orderid`,`out_trade_id`,`payment_status`,`subject` FROM %s WHERE `orderid`='%s'", payments.TableName(), order_id)
+func (payments *WpPayments) LoadByOrderId(outTradeId string) (err error) {
+	select_str := fmt.Sprintf("SELECT `ID`,`mch_id`,`order_no`,`notifyurl`,`callbackurl`,`pay_memberid`,`amount`,`bankcode`,`orderid`,`out_trade_id`,`payment_status`,`subject` FROM %s WHERE `out_trade_id`='%s'", payments.TableName(), outTradeId)
 
 	var (
 		id             int64
@@ -98,10 +98,9 @@ func (this *WpPayments) Insert() error {
 	return nil
 }
 
-//UpdateCallInterface 更新调用提现接口为已发送状态
-func (this *WpPayments) UpdatePaymentStatusSuccess(order_no string) error {
-	sql_str := fmt.Sprintf("UPDATE %s SET `payment_status`=1, `updated_at`=%d WHERE order_no='%s'",
-		this.TableName(), time.Now().Unix(), order_no)
+func (this *WpPayments) UpdatePaymentStatusSuccess(out_trade_id string) error {
+	sql_str := fmt.Sprintf("UPDATE %s SET `payment_status`=1, `updated_at`=%d WHERE out_trade_id='%s'",
+		this.TableName(), time.Now().Unix(), out_trade_id)
 	tx, err := lib.NewTx()
 	if err != nil {
 		return err

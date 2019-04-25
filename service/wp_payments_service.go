@@ -1,6 +1,7 @@
 package service
 
 import (
+	"cashier_service/lib"
 	"cashier_service/models"
 	logs "github.com/cihub/seelog"
 )
@@ -19,7 +20,7 @@ func (this *WpPaymentsService) GetWpPaymentByTradeId(outTradeId string) (*models
 	return payment, nil
 }
 
-func (this *WpPaymentsService) AddPayment(mch_id string, order_no string,orderid string, out_trade_id string,
+func (this *WpPaymentsService) AddPayment(tx *lib.CTx, mch_id string, order_no string, orderid string, out_trade_id string,
 	subject string, amount float64, notifyurl string, callbackurl string) (*models.WpPayments, error) {
 	payment := &models.WpPayments{}
 	payment.Mch_id = mch_id
@@ -33,7 +34,7 @@ func (this *WpPaymentsService) AddPayment(mch_id string, order_no string,orderid
 	payment.Out_trade_id = out_trade_id
 	payment.Payment_status = 0
 	payment.Subject = subject
-	err := payment.Insert()
+	err := payment.Insert(tx)
 	if err != nil {
 		_ = logs.Warnf("WpPaymentsService::AddPayment, payment Insert error, payment:%v, error:%s", payment, err.Error())
 		return nil, err

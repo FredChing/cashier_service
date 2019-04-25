@@ -1,6 +1,7 @@
 package service
 
 import (
+	"cashier_service/lib"
 	"cashier_service/models"
 	logs "github.com/cihub/seelog"
 )
@@ -18,12 +19,13 @@ func (this *PayOrderService) GetPayOrderByTradeId(outTradeId string) (*models.Pa
 	return order, nil
 }
 
-func (this *PayOrderService) AddPayOrder(pay_memberid string, pay_orderid string,pay_amount float64, pay_actualamount float64,
+func (this *PayOrderService) AddPayOrder(tx *lib.CTx91dpays, pay_memberid string, pay_orderid string,pay_amount float64, pay_actualamount float64,
 	subject string, out_trade_id string, notifyurl string, callbackurl string) (*models.PayOrder, error) {
 	order := &models.PayOrder{}
 	order.Pay_memberid = pay_memberid
 	order.Pay_orderid = pay_orderid
 	order.Pay_amount = pay_amount
+	order.Pay_type = 1
 	order.Pay_actualamount = pay_actualamount
 	order.Pay_notifyurl = notifyurl
 	order.Pay_callbackurl = callbackurl
@@ -43,7 +45,7 @@ func (this *PayOrderService) AddPayOrder(pay_memberid string, pay_orderid string
 	order.Xx = 0
 	order.Attach = ""
 	order.Pay_channel_account = ""
-	err := order.Insert()
+	err := order.Insert(tx)
 	if err != nil {
 		_ = logs.Warnf("PayOrderService::AddPayOrder, pay_order Insert error, pay_order:%v, error:%s", order, err.Error())
 		return nil, err

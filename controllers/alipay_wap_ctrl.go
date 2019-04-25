@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"cashier_service/lib"
 	"cashier_service/models"
 	"cashier_service/service"
 	"encoding/base64"
@@ -59,28 +60,41 @@ func (this *AlipayWap) Pay() {
 	paymentService := &service.WpPaymentsService{}
 	order_no := string(time.Now().Format("20060102150405")) + strconv.Itoa(time.Now().Nanosecond())
 	amount_f, _ := strconv.ParseFloat(amount, 64)
-	payment,err := paymentService.GetWpPaymentByTradeId(trade_id)
+	payment, err := paymentService.GetWpPaymentByTradeId(trade_id)
 	if err == nil && payment.Orderid != "" {
 		this.Abort("请勿重复提交订单")
 		return
 	}
-	payment, err = paymentService.AddPayment(mch_id, order_no, trade_id, trade_id, product_name, amount_f, notify_url, return_url)
+	tx, err := lib.NewTx()
+	if err != nil {
+		this.Abort("系统异常E002")
+		return
+	}
+	payment, err = paymentService.AddPayment(tx, mch_id, order_no, trade_id, trade_id, product_name, amount_f, notify_url, return_url)
 	if err != nil {
 		this.Abort("创建订单失败")
 		return
 	}
 
 	orderService := &service.PayOrderService{}
-	payorder,err := orderService.GetPayOrderByTradeId(trade_id)
+	payorder, err := orderService.GetPayOrderByTradeId(trade_id)
 	if err == nil && payorder.Out_trade_id != "" {
 		this.Abort("请勿重复提交订单!!!")
 		return
 	}
-	payorder, err = orderService.AddPayOrder(mch_id, order_no, amount_f, amount_f, product_name, trade_id, notify_url, return_url)
+	txOrder, err := lib.NewTx91dpays()
 	if err != nil {
+		this.Abort("系统异常E001")
+		return
+	}
+	payorder, err = orderService.AddPayOrder(txOrder, mch_id, order_no, amount_f, amount_f, product_name, trade_id, notify_url, return_url)
+	if err != nil {
+		tx.Rollback()
 		this.Abort("创建订单失败!!!")
 		return
 	}
+	_ = tx.Commit()
+	_ = txOrder.Commit()
 
 	logs.Infof("alipay_wap_ctrl::pay, AddPayment success, trade_id:%s", trade_id)
 	p := make(map[string]string)

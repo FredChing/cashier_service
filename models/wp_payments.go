@@ -79,7 +79,7 @@ func (payments *WpPayments) LoadByOrderId(outTradeId string) (err error) {
 }
 
 //Insert 添加数据
-func (this *WpPayments) Insert() error {
+func (this *WpPayments) Insert(tx *lib.CTx) error {
 	if this.Created_at == 0 {
 		this.Created_at = time.Now().Unix()
 		this.Updated_at = this.Created_at

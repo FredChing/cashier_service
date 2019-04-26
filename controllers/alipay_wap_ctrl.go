@@ -172,9 +172,9 @@ func (this *AlipayWap) Pay() {
 		//this.OutputError(-1, err)
 		return
 	}
-	err = orderService.UpdateOrderPayStatusPending(order_no)
+	err = orderService.UpdateOrderPayStatusPending(trade_id)
 	if err == nil {
-		logs.Infof("AlipayWap::Pay, UpdateOrderPayStatusPending success, order_no:%s", order_no)
+		logs.Infof("AlipayWap::Pay, UpdateOrderPayStatusPending success, trade_id:%s", trade_id)
 	}
 	this.Redirect(http_url, 302)
 	//this.OutputSuccess(http_url)
